@@ -54,19 +54,15 @@ async def on_message(msg: types.Message):
 
 @dp.message()
 async def on_comic(msg: types.Message):
-    kbd = types.InlineKeyboardMarkup(inline_keyboard=[
-        [
-            types.InlineKeyboardButton(text='Вперёд', callback_data=f'{msg.text}:2'),
-            # types.InlineKeyboardButton(text='Назад', callback_data=f'{msg.text}:1'),
-        ],
-        # [
-        #     types.InlineKeyboardButton(text='В начало', callback_data='{msg.text}:1'),
-        #  ]
-    ])
+    kbd = [[]]
+
+    max_len = int(await db.hget("comics", comic))
+    if max_len != 1:
+        kbd[0].append(types.InlineKeyboardButton(text='Вперёд', callback_data=f'{msg.text}:2'))        
 
     try:
         with open(f"comics/{msg.text}/1.png", 'rb') as f:
-            await msg.answer_photo(photo=types.BufferedInputFile(f.read(), "comic.png"), reply_markup=kbd)
+            await msg.answer_photo(photo=types.BufferedInputFile(f.read(), "comic.png"), reply_markup=types.InlineKeyboardMarkup(inline_keyboard=kbd))
     except:
         await msg.answer("Нет такого комикса")
 
