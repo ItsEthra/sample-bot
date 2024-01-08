@@ -38,7 +38,11 @@ async fn add(
     let comic_path = format!("comics/{comic}");
     fs::create_dir_all(&comic_path).await?;
 
-    let len = db.hget::<usize, _, _>("comics", &comic).await? + 1;
+    let len = db
+        .hget::<Option<usize>, _, _>("comics", &comic)
+        .await?
+        .unwrap_or(0)
+        + 1;
 
     // Thanks ItsEthra for adding this handy `to_bytes` function, what could I have done without ya.
     // TODO: Should be limiting body size and checking if body is valid image
