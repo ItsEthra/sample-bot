@@ -1,0 +1,4 @@
+DROP TABLE Users;
+DROP TABLE Classes;
+DROP TABLE Institutes;
+DROP TYPE STATUS;
