@@ -50,7 +50,10 @@ async fn add(
     Ok(())
 }
 
-async fn remove(Path((comic, num)): Path<(String, usize)>) -> RouteResult<()> {
+async fn remove(
+    State(db): State<RedisClient>,
+    Path((comic, num)): Path<(String, usize)>,
+) -> RouteResult<()> {
     let stream = ReadDirStream::new(fs::read_dir(format!("comics/{comic}")).await?);
     let to_move = stream
         .filter_map(|x| async { x.ok() })
@@ -74,6 +77,12 @@ async fn remove(Path((comic, num)): Path<(String, usize)>) -> RouteResult<()> {
         .collect::<Vec<_>>()
         .await;
 
+    if num == 1 && to_move.is_empty() {
+        db.hdel("comics", &comic).await?;
+    } else {
+        db.hincrby("comics", &comic, -1).await?;
+    }
+
     for (path, old) in to_move {
         let new = format!("{}.png", old - 1);
         println!("Moving {:?} to {new}", path.file_name().unwrap());
@@ -93,8 +102,8 @@ async fn main() -> Result<()> {
 
     let listener = TcpListener::bind("127.0.0.1:8080").await?;
     let app = Router::new()
-        .route("/add/:comic", post(add))
-        .route("/remove/:comic/:num", delete(remove))
+        .route("/comic/:comic", post(add))
+        .route("/comic/:comic/:num", delete(remove))
         .with_state(client);
 
     axum::serve(listener, app).await?;
