@@ -57,7 +57,14 @@ async fn add(
 async fn remove(
     State(db): State<RedisClient>,
     Path((comic, num)): Path<(String, usize)>,
-) -> RouteResult<()> {
+) -> RouteResult<StatusCode> {
+    // dirty, best case scenario would be to have a normal enum error type but oh well
+    match db.hget::<Option<usize>, _, _>("comics", &comic).await? {
+        None => return Ok(StatusCode::NOT_FOUND),
+        Some(max) if num > max => return Ok(StatusCode::NOT_FOUND),
+        _ => {}
+    }
+
     let stream = ReadDirStream::new(fs::read_dir(format!("comics/{comic}")).await?);
     let to_move = stream
         .filter_map(|x| async { x.ok() })
@@ -94,7 +101,7 @@ async fn remove(
         fs::rename(path.clone(), path.with_file_name(&new)).await?;
     }
 
-    Ok(())
+    Ok(StatusCode::OK)
 }
 
 #[tokio::main(flavor = "current_thread")]

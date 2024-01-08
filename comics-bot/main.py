@@ -56,7 +56,7 @@ async def on_message(msg: types.Message):
 async def on_comic(msg: types.Message):
     kbd = [[]]
 
-    max_len = int(await db.hget("comics", comic))
+    max_len = int(await db.hget("comics", msg.text))
     if max_len != 1:
         kbd[0].append(types.InlineKeyboardButton(text='Вперёд', callback_data=f'{msg.text}:2'))        
 
