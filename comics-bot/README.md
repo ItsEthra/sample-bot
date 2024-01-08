@@ -1,6 +1,6 @@
 Для запуска необходимо создать `.env` файл с токеном бота `COMICS_BOT_TOKEN=<token>` или просто откройте [@sample_comics_bot](https://t.me/sample_comics_bot) в телеграме(REST API не доступно).
 
-Для работы нужен redis: `docker run --name comics-bot -p 6379:6379 redis`
+Для работы нужен redis: `docker run --name comics-bot -p 6379:6379 redis`. В репозитории лежит папка `comics` c пятью комиксами `xkcd`, что бы пропустить добавление через REST можно сделать `redis-cli hset comics xkcd 5`
 
 REST API написано на rust + axum так как в тз про язык REST ничего сказано не было `¯\_(ツ)_/¯`.
 
